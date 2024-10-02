@@ -66,15 +66,39 @@ app.get('/messages', async (req, res) => {
 
 // API để gửi tin nhắn mới
 app.post('/messages', async (req, res) => {
-	const { name, message } = req.body;
-	try {
-		await pool.query('INSERT INTO messages (name, message) VALUES ($1, $2)', [name, message]);
-		io.emit('message', req.body);
-		res.sendStatus(200);
-	} catch (err) {
-		console.error(err);
-	  	res.sendStatus(500);
-	}
+    const { name, message } = req.body;
+    try {
+        const result = await pool.query('INSERT INTO messages (name, message) VALUES ($1, $2) RETURNING id', [name, message]);
+        const newMessageId = result.rows[0].id;
+
+        // Gửi tin nhắn đến tất cả các client qua Socket.IO
+        const newMessage = { id: newMessageId, name, message }; // Tạo đối tượng tin nhắn mới
+        io.emit('message', newMessage); // Gửi tin nhắn qua socket
+
+        res.json({ id: newMessageId }); // Trả về ID cho client
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi thêm tin nhắn.');
+    }
+});
+
+// API để xóa tin nhắn
+app.delete('/messages/:id', async (req, res) => {
+    const messageId = parseInt(req.params.id, 10); // Chuyển đổi thành số nguyên
+    if (isNaN(messageId)) {
+        return res.status(400).send('ID không hợp lệ.');
+    }
+    
+    try {
+        const result = await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
+        if (result.rowCount === 0) {
+            return res.status(404).send('Tin nhắn không tìm thấy.');
+        }
+        res.sendStatus(204); // Thành công
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Lỗi khi xóa tin nhắn.');
+    }
 });
 
 // Lắng nghe sự kiện kết nối của Socket.IO

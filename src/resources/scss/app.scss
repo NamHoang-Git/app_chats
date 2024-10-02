@@ -1,10 +1,38 @@
 @import 'variables';
 
-h2 {
-    color: $blue_color;
-    font-size: 1rem;
+h1.display-4 {
+    font-weight: 500;
+    color: rgb(9, 15, 43);
+    margin-top: 18px;
 }
 
-h1 {
-    color: red;
+#messages .delete-button {
+    font-size: 8px;
+    cursor: pointer;
+}
+
+#messages.messages-scroll {
+    display: flex;
+    flex-direction: column;
+    height: 275px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top: 18px;
+    border-radius: 8px;
+    background: #dbdbdb;
+}
+
+#messages.messages-scroll::-webkit-scrollbar {
+    width: 12px;
+}
+
+#messages.messages-scroll::-webkit-scrollbar-thumb {
+    background: #beaaaa;
+    border-radius: 10px; 
+    height: 10px;
+}
+
+#messages.messages-scroll::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px grey;
+    border-radius: 10px;
 }
